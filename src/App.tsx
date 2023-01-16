@@ -37,59 +37,6 @@ function App() {
     });
   }, []);
 
-  // useEffect(() => {
-  //   //request
-  //   //update data state
-  //   if (!selected) {
-  //     return;
-  //   }
-
-  //   axios
-  //     .get(
-  //       `https://api.coingecko.com/api/v3/coins/${
-  //         selected?.id
-  //       }/market_chart?vs_currency=usd&days=${range}&${
-  //         range === "1" ? "interval-hourly" : "interval=daily"
-  //       }`
-  //     )
-  //     .then((response) => {
-  //       console.log("getting crypto");
-  //       console.log(response.data);
-  //       setData({
-  //         labels: response.data.prices.map((price: number[]) => {
-  //           return moment
-  //             .unix(price[0] / 1000)
-  //             .format(range === "1" ? "HH:MM" : "MM-DD");
-  //         }),
-  //         datasets: [
-  //           {
-  //             label: "Dataset 1",
-  //             data: response.data.prices.map((price: number[]) => {
-  //               return price[1];
-  //             }),
-  //             borderColor: "rgb(255, 99, 132)",
-  //             backgroundColor: "rgba(255, 99, 132, 0.5)",
-  //           },
-  //         ],
-  //       });
-  //     });
-  //   setOptions({
-  //     responsive: true,
-  //     plugins: {
-  //       legend: {
-  //         display: false,
-  //       },
-  //       title: {
-  //         display: true,
-  //         text:
-  //           `${selected?.name} Price over last ` +
-  //           `${
-  //             range === "1" ? "1 day" : range === "29" ? "30 days" : "7 days"
-  //           }`,
-  //       },
-  //     },
-  //   });
-  // }, [selected, range]);
 
   useEffect(() => {
     if(selected.length === 0 ){return}
