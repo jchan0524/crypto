@@ -1,31 +1,28 @@
-import React, { useEffect, useState } from "react";
+
+import { useEffect, useState } from "react";
 import "./App.css";
 import axios from "axios";
 import CryptoSummary from "./components/CryptoSummary";
 import { Crypto } from "./Types";
-import moment from "moment";
+
 
 import {
   Chart as ChartJS,
-  CategoryScale,
-  LinearScale,
-  PointElement,
-  LineElement,
-  Title,
+  
   Tooltip,
   Legend,
   ArcElement,
 } from "chart.js";
 import { Pie } from "react-chartjs-2";
-import type { ChartData, ChartOptions } from "chart.js";
-import { privateDecrypt } from "crypto";
+import type { ChartData } from "chart.js";
+
 
 ChartJS.register(ArcElement, Tooltip, Legend);
 
 function App() {
   const [cryptos, setCryptos] = useState<Crypto[] | null>(null);
   const [selected, setSelected] = useState<Crypto[]>([]);
-  const [range, setRange] = useState<string>("29");
+ 
   const [data, setData] = useState<ChartData<"pie">>();
 
   useEffect(() => {
@@ -85,10 +82,11 @@ function App() {
           onChange={(e) => {
             cryptos?.find((x) => {
               if (x.id === e.target.value) {
-                const c = x as Crypto;
+                
                 setSelected([...selected, x]);
 
-                console.log(x);
+               
+                
               }
             });
           }}

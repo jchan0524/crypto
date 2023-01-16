@@ -20,7 +20,8 @@ export default function CryptoSummary({
     <>
       <div>
         <span>{crypto.name + " $" + crypto.current_price}</span>;
-        <input
+        <input 
+        title = 'hello'
           type="number"
           style={{ margin: 10 }}
           value={amount}
