@@ -2,8 +2,9 @@ import React, { useEffect, useState } from "react";
 import "./App.css";
 import axios from "axios";
 import CryptoSummary from "./components/CryptoSummary";
-import { Crypto } from "./Crypto";
+import { Crypto } from "./Types";
 import moment from "moment";
+
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -13,41 +14,21 @@ import {
   Title,
   Tooltip,
   Legend,
+  ArcElement,
 } from "chart.js";
-import { Line } from "react-chartjs-2";
+import { Pie } from "react-chartjs-2";
 import type { ChartData, ChartOptions } from "chart.js";
 import { privateDecrypt } from "crypto";
 
-ChartJS.register(
-  CategoryScale,
-  LinearScale,
-  PointElement,
-  LineElement,
-  Title,
-  Tooltip,
-  Legend
-);
+ChartJS.register(ArcElement, Tooltip, Legend);
 
 function App() {
   const [cryptos, setCryptos] = useState<Crypto[] | null>(null);
-  const [selected, setSelected] = useState<Crypto | null>(null);
-  const [data, setData] = useState<ChartData<"line">>();
-
+  const [selected, setSelected] = useState<Crypto[]>([]);
   const [range, setRange] = useState<string>("29");
-  const [options, setOptions] = useState<ChartOptions<"line">>({
-    responsive: true,
-    plugins: {
-      legend: {
-        position: "top" as const,
-      },
-      title: {
-        display: false,
-      },
-    },
-  });
+  const [data, setData] = useState<ChartData<"pie">>();
 
   useEffect(() => {
-    
     const url =
       "https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&order=market_cap_desc&per_page=100&page=1&sparkline=false";
     axios.get(url).then((response) => {
@@ -56,59 +37,98 @@ function App() {
     });
   }, []);
 
-  useEffect(() => {
-    //request
-    //update data state
-    if (!selected) {
-      return;
-    }
+  // useEffect(() => {
+  //   //request
+  //   //update data state
+  //   if (!selected) {
+  //     return;
+  //   }
 
-    axios
-      .get(
-        `https://api.coingecko.com/api/v3/coins/${
-          selected?.id
-        }/market_chart?vs_currency=usd&days=${range}&${
-          range === "1" ? "interval-hourly" : "interval=daily"
-        }`
-      )
-      .then((response) => {
-        console.log("getting crypto");
-        console.log(response.data);
-        setData({
-          labels: response.data.prices.map((price: number[]) => {
-            return moment
-              .unix(price[0] / 1000)
-              .format(range === "1" ? "HH:MM" : "MM-DD");
-          }),
-          datasets: [
-            {
-              label: "Dataset 1",
-              data: response.data.prices.map((price: number[]) => {
-                return price[1];
-              }),
-              borderColor: "rgb(255, 99, 132)",
-              backgroundColor: "rgba(255, 99, 132, 0.5)",
-            },
+  //   axios
+  //     .get(
+  //       `https://api.coingecko.com/api/v3/coins/${
+  //         selected?.id
+  //       }/market_chart?vs_currency=usd&days=${range}&${
+  //         range === "1" ? "interval-hourly" : "interval=daily"
+  //       }`
+  //     )
+  //     .then((response) => {
+  //       console.log("getting crypto");
+  //       console.log(response.data);
+  //       setData({
+  //         labels: response.data.prices.map((price: number[]) => {
+  //           return moment
+  //             .unix(price[0] / 1000)
+  //             .format(range === "1" ? "HH:MM" : "MM-DD");
+  //         }),
+  //         datasets: [
+  //           {
+  //             label: "Dataset 1",
+  //             data: response.data.prices.map((price: number[]) => {
+  //               return price[1];
+  //             }),
+  //             borderColor: "rgb(255, 99, 132)",
+  //             backgroundColor: "rgba(255, 99, 132, 0.5)",
+  //           },
+  //         ],
+  //       });
+  //     });
+  //   setOptions({
+  //     responsive: true,
+  //     plugins: {
+  //       legend: {
+  //         display: false,
+  //       },
+  //       title: {
+  //         display: true,
+  //         text:
+  //           `${selected?.name} Price over last ` +
+  //           `${
+  //             range === "1" ? "1 day" : range === "29" ? "30 days" : "7 days"
+  //           }`,
+  //       },
+  //     },
+  //   });
+  // }, [selected, range]);
+
+  useEffect(() => {
+    if(selected.length === 0 ){return}
+    setData({
+      labels: selected.map((s) => s.name),  
+      datasets: [
+        {
+          label: "# of Votes",
+          data: selected.map((s) => s.owned * s.current_price),
+          backgroundColor: [
+            "rgba(255, 99, 132, 0.2)",
+            "rgba(54, 162, 235, 0.2)",
+            "rgba(255, 206, 86, 0.2)",
+            "rgba(75, 192, 192, 0.2)",
+            "rgba(153, 102, 255, 0.2)",
+            "rgba(255, 159, 64, 0.2)",
           ],
-        });
-      });
-    setOptions({
-      responsive: true,
-      plugins: {
-        legend: {
-          display: false,
+          borderColor: [
+            "rgba(255, 99, 132, 1)",
+            "rgba(54, 162, 235, 1)",
+            "rgba(255, 206, 86, 1)",
+            "rgba(75, 192, 192, 1)",
+            "rgba(153, 102, 255, 1)",
+            "rgba(255, 159, 64, 1)",
+          ],
+          borderWidth: 1,
         },
-        title: {
-          display: true,
-          text:
-            `${selected?.name} Price over last ` +
-            `${
-              range === "1" ? "1 day" : range === "29" ? "30 days" : "7 days"
-            }`,
-        },
-      },
+      ],
     });
-  }, [selected, range]);
+  }, [selected]);
+
+  function updateOwned(crypto: Crypto, amount: number): void {
+    let temp = [...selected];
+    let tempObj = temp.find((c) => c.id === crypto.id);
+    if (tempObj) {
+      tempObj.owned = amount;
+      setSelected(temp);
+    }
+  }
 
   return (
     <>
@@ -118,7 +138,8 @@ function App() {
           onChange={(e) => {
             cryptos?.find((x) => {
               if (x.id === e.target.value) {
-                setSelected(x);
+                const c = x as Crypto;
+                setSelected([...selected, x]);
 
                 console.log(x);
               }
@@ -137,23 +158,33 @@ function App() {
               })
             : null}{" "}
         </select>
-        <select
-          onChange={(e) => {
-            setRange(e.target.value);
-            console.log(e.target.value);
-          }}
-        >
-          <option value="29">30 Days</option>
-          <option value="6">7 Days</option>
-          <option value="1">1 Day</option>
-        </select>
       </div>
-      {selected ? <CryptoSummary crypto={selected} /> : null}
+      {selected.map((s) => {
+        return <CryptoSummary crypto={s} updateOwned={updateOwned} />;
+      })}
+      {/* {selected ? <CryptoSummary crypto={selected} /> : null}  */}
       {data ? (
         <div style={{ width: 600 }}>
-          <Line options={options} data={data} />{" "}
+          <Pie data={data} />{" "}
         </div>
       ) : null}
+      {"$" + selected
+        ? "Your Portfolio is Worth " +
+          selected
+            .map((s) => {
+              if (isNaN(s.owned)) {
+                return 0;
+              }
+              return s.current_price * s.owned;
+            })
+            .reduce((prev, current) => {
+              return prev + current;
+            }, 0)
+            .toLocaleString(undefined, {
+              minimumFractionDigits: 2,
+              maximumFractionDigits: 2,
+            })
+        : null}
     </>
   );
 }
